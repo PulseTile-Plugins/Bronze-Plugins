@@ -17,21 +17,12 @@
 let templateGenericpluginCreate = require('./genericplugin-create.html');
 
 class GenericpluginCreateController {
-  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests) {
-    $scope.clinicalNote = {};
-    $scope.clinicalNote.dateCreated = new Date().toISOString().slice(0, 10);
-    
-    this.setCurrentPageData = function (data) {
-      if (data.genericplugin.dataCreate !== null) {
-        this.goList();
-      }
-      if (data.patientsGet.data) {
-        this.currentPatient = data.patientsGet.data;
-      }
-      if (serviceRequests.currentUserData) {
-        $scope.currentUser = serviceRequests.currentUserData;
-      }
-    };
+  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests, serviceFormatted) {
+    $scope.actionLoadList = genericpluginActions.all;
+    $scope.actionCreateDetail = genericpluginActions.create;
+
+    $scope.genericplugin = {};
+    $scope.genericplugin.dateCreated = new Date().toISOString().slice(0, 10);
 
     this.goList = function () {
       $state.go('genericplugin', {
@@ -46,37 +37,44 @@ class GenericpluginCreateController {
       this.goList();
     };
     
-    $scope.create = function (clinicalNoteForm, clinicalNote) {
+    $scope.create = function (genericPluginForm, genericPlugin) {
       $scope.formSubmitted = true;
 
-      let toAdd = {
-        noteType: clinicalNote.noteType,
-        notes: clinicalNote.notes,
-        dateCreated: clinicalNote.dateCreated,
-        author: clinicalNote.author,
-        source: 'openehr'
-      };
-
-      if (clinicalNoteForm.$valid) {
-
-        $scope.genericpluginCreate(this.currentPatient.id, toAdd);
+      if (genericPluginForm.$valid) {
+        let toAdd = {
+          noteType: genericPlugin.noteType,
+          notes: genericPlugin.notes,
+          dateCreated: genericPlugin.dateCreated,
+          author: genericPlugin.author,
+          source: 'openehr'
+        };
+        serviceFormatted.propsToString(toAdd, 'dateCreated');
+        $scope.actionCreateDetail($stateParams.patientId, toAdd);
       }
     }.bind(this);
+
+    this.setCurrentPageData = function (data) {
+      if (data.genericplugin.dataCreate !== null) {
+        $scope.actionLoadList($stateParams.patientId);
+        this.goList();
+      }
+      if (serviceRequests.currentUserData) {
+        $scope.currentUser = serviceRequests.currentUserData;
+        $scope.genericplugin.author = $scope.currentUser.email;
+      }
+    };
 
     let unsubscribe = $ngRedux.connect(state => ({
       getStoreData: this.setCurrentPageData(state)
     }))(this);
-
     $scope.$on('$destroy', unsubscribe);
-
-    $scope.genericpluginCreate = genericpluginActions.create;
   }
 }
 
-const genericpluginCreateComponent = {
+const GenericpluginCreateComponent = {
   template: templateGenericpluginCreate,
   controller: GenericpluginCreateController
 };
 
-GenericpluginCreateController.$inject = ['$scope', '$state', '$stateParams', '$ngRedux', 'genericpluginActions', 'serviceRequests'];
-export default genericpluginCreateComponent;
+GenericpluginCreateController.$inject = ['$scope', '$state', '$stateParams', '$ngRedux', 'genericpluginActions', 'serviceRequests', 'serviceFormatted'];
+export default GenericpluginCreateComponent;

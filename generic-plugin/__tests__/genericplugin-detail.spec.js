@@ -1,6 +1,5 @@
 'use strict';
-import GenericpluginDetailComponent from '../../../../app/rippleui/pages/generic-plugin/genericplugin-detail.component';
-import '../../../../app/index';
+import GenericpluginDetailComponent from '../genericplugin-detail.component';
 
 describe('Genericplugin Details', function() {
 

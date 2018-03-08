@@ -17,77 +17,95 @@
 let templateGenericpluginDetail = require('./genericplugin-detail.html');
 
 class GenericpluginDetailController {
-  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests, usSpinnerService) {
-    
-    this.setCurrentPageData = function (data) {
+  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests, usSpinnerService, serviceFormatted) {
+    this.actionLoadList = genericpluginActions.all;
+    this.actionLoadDetail = genericpluginActions.get;
+    $scope.actionUpdateDetail = genericpluginActions.update;
+
+    usSpinnerService.spin('detail-spinner');
+    this.actionLoadDetail($stateParams.patientId, $stateParams.detailsIndex);
+
+    //Edit Generic Plugin
+    $scope.isEdit = false;
+
+    /* istanbul ignore next  */
+    this.edit = function () {
+      $scope.isEdit = true;
+      $scope.genericpluginEdit = Object.assign({}, this.genericplugin);
+      $scope.genericpluginEdit.dateCreated = new Date(this.genericplugin.dateCreated);
+    };
+
+    this.cancelEdit = function () {
+      $scope.isEdit = false;
+    };
+
+    $scope.confirmEdit = function (genericPluginForm, genericPlugin) {
+      $scope.formSubmitted = true;
+
       /* istanbul ignore if  */
-      if (data.patientsGet.data) {
-        this.currentPatient = data.patientsGet.data;
+      if (genericPluginForm.$valid) {
+        let toUpdate = {
+          noteType: genericPlugin.noteType,
+          notes: genericPlugin.notes,
+          author: genericPlugin.author,
+          source: genericPlugin.source,
+          sourceId: genericPlugin.sourceId,
+          dateCreated: new Date().getTime()
+        };
+
+        $scope.isEdit = false;
+        serviceFormatted.propsToString(toUpdate, 'dateCreated');
+        $scope.actionUpdateDetail($stateParams.patientId, genericPlugin.sourceId, toUpdate);
       }
-      if (data.personalnotes.dataGet) {
-        this.genericplugin = data.genericplugin.dataGet;
+    };
+
+    this.setCurrentPageData = function (store) {
+      const state = store.genericplugins;
+      const { patientId, detailsIndex } = $stateParams;
+
+      // Get Details data
+      if (state.dataGet) {
+        this.genericplugin = state.dataGet;
         this.dateCreated = moment(this.genericplugin.dateCreated).format('DD-MMM-YYYY');
-        usSpinnerService.stop("genericpluginDetail-spinner");
+        (detailsIndex === state.dataGet.sourceId) ? usSpinnerService.stop('detail-spinner') : null;
+      }
+
+      // Update Detail
+      if (state.dataUpdate !== null) {
+        // After Update we request all list firstly
+        this.actionLoadList(patientId);
+      }
+      if (state.isUpdateProcess) {
+        usSpinnerService.spin('detail-update-spinner');
+        if (!state.dataGet && !state.isGetFetching) {
+          // We request detail when data is empty
+          // Details are cleared after request LoadAll list
+          this.actionLoadDetail(patientId, detailsIndex);
+        }
+      } else {
+        usSpinnerService.stop('detail-update-spinner');
+      }
+      if (serviceRequests.currentUserData) {
+        this.currentUser = serviceRequests.currentUserData;
+      }
+
+      if (state.error) {
+        usSpinnerService.stop('detail-spinner');
+        usSpinnerService.stop('detail-update-spinner');
       }
     };
 
     let unsubscribe = $ngRedux.connect(state => ({
       getStoreData: this.setCurrentPageData(state)
     }))(this);
-
     $scope.$on('$destroy', unsubscribe);
-
-    this.genericpluginLoad = genericpluginActions.get;
-    this.genericpluginLoad($stateParams.patientId, $stateParams.personalNoteIndex, $stateParams.source);
-  
-    //Edit Clinical Note
-    
-    $scope.isEdit = false;
-
-    /* istanbul ignore next  */
-    this.edit = function () {
-      $scope.isEdit = true;
-
-      $scope.currentUser = this.currentUser;
-      $scope.genericpluginEdit = Object.assign({}, this.genericplugin);
-      $scope.patient = this.currentPatient;
-      
-      $scope.genericpluginEdit.dateCreated = new Date(this.genericplugin.dateCreated).toISOString().slice(0, 10);
-    };
-    this.cancelEdit = function () {
-      $scope.isEdit = false;
-    };
-
-    $scope.confirmEdit = function (personalNoteForm, personalNote) {
-      $scope.formSubmitted = true;
-      /* istanbul ignore if  */
-      if (personalNoteForm.$valid) {
-        let toUpdate = {
-          noteType: personalNote.noteType,
-          notes: personalNote.notes,
-          author: personalNote.author,
-          source: personalNote.source,
-          sourceId: personalNote.sourceId
-        };
-        
-        this.personalNote = Object.assign(personalNote, $scope.personalNoteEdit);
-        $scope.isEdit = false;
-        genericpluginActions.update($scope.patient.id, toUpdate);
-        setTimeout(function () {
-          $state.go('personalNotes-detail', {
-            patientId: $scope.patient.id,
-            personalNoteIndex: personalNote.sourceId
-          });
-        }, 1000);
-      }
-    };
   }
 }
 
-const genericpluginDetailComponent = {
+const GenericpluginDetailComponent = {
   template: templateGenericpluginDetail,
   controller: GenericpluginDetailController
 };
 
 GenericpluginDetailController.$inject = ['$scope', '$state', '$stateParams', '$ngRedux', 'genericpluginActions', 'serviceRequests', 'usSpinnerService'];
-export default genericpluginDetailComponent;
+export default GenericpluginDetailComponent;

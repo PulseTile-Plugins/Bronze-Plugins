@@ -21,21 +21,20 @@ import genericpluginDetailComponent from './genericplugin-detail.component';
 import genericpluginActions from './genericplugin-actions';
 
 export default {
-    "name": 'genericplugin',
-    "routes": routes,
-    "reducer": reducer,
-    "components": {
-        genericpluginListComponent,
-        genericpluginCreateComponent,
-        genericpluginDetailComponent
-    },
-    "actions": {
-        genericpluginActions
-    },
-    "sidebarInfo": {
-        name: 'genericplugin',
-        link: 'genericplugin',
-        linkDetail: 'genericplugin-detail',
-        title: 'Generic plugin'
-    }
+  "name": 'genericplugin',
+  "routes": routes,
+  "reducer": reducer,
+  "components": {
+    genericpluginListComponent,
+    genericpluginCreateComponent,
+    genericpluginDetailComponent
+  },
+  "actions": {
+    genericpluginActions
+  },
+  "sidebarInfo": {
+    name: 'genericplugin',
+    link: 'genericplugin',
+    title: 'Generic plugin'
+  }
 }

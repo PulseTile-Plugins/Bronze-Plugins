@@ -14,21 +14,25 @@
  ~  limitations under the License.
  */
 
-import {bindActionCreators} from 'redux';
-import * as types from '../../../constants/ActionTypes';
+import { bindActionCreators } from 'redux';
+import * as types from './action-types';
 
+export function clear() {
+  return { type: types.GENERIC_PLUGIN__CLEAR }
+}
 export function all(patientId) {
   return {
     types: [types.GENERIC_PLUGIN, types.GENERIC_PLUGIN_SUCCESS, types.GENERIC_PLUGIN_ERROR],
 
-    shouldCallAPI: (state) => !state.contacts.response,
+    shouldCallAPI: (state) => !state.genericplugins.response,
 
     config: {
       method: 'get',
-      url: '/api/patients/' + patientId + '/genericplugin'
+      url: '/api/patients/' + patientId + '/genericplugins'
     },
 
     meta: {
+      patientId: patientId,
       timestamp: Date.now()
     }
   };
@@ -37,11 +41,11 @@ export function get(patientId, compositionId, source) {
   return {
     types: [types.GENERIC_PLUGIN_GET, types.GENERIC_PLUGIN_GET_SUCCESS, types.GENERIC_PLUGIN_GET_ERROR],
 
-    shouldCallAPI: (state) => !state.contacts.response,
+    shouldCallAPI: (state) => !state.genericplugins.response,
 
     config: {
       method: 'get',
-      url: '/api/patients/' + patientId + '/genericplugin/' + compositionId + '?source=' + source
+      url: '/api/patients/' + patientId + '/genericplugins/' + compositionId
     },
 
     meta: {
@@ -53,11 +57,11 @@ export function create(patientId, composition) {
   return {
     types: [types.GENERIC_PLUGIN_CREATE, types.GENERIC_PLUGIN_CREATE_SUCCESS, types.GENERIC_PLUGIN_CREATE_ERROR],
 
-    shouldCallAPI: (state) => !state.contacts.response,
+    shouldCallAPI: (state) => !state.genericplugins.response,
 
     config: {
       method: 'post',
-      url: '/api/patients/' + patientId + '/genericplugin',
+      url: '/api/patients/' + patientId + '/genericplugins',
       data: composition
     },
 
@@ -70,11 +74,11 @@ export function update(patientId, composition) {
   return {
     types: [types.GENERIC_PLUGIN_UPDATE, types.GENERIC_PLUGIN_UPDATE_SUCCESS, types.GENERIC_PLUGIN_UPDATE_ERROR],
 
-    shouldCallAPI: (state) => !state.contacts.response,
+    shouldCallAPI: (state) => !state.genericplugins.response,
 
     config: {
       method: 'put',
-      url: '/api/patients/' + patientId + '/genericplugin',
+      url: '/api/patients/' + patientId + '/genericplugins/' + sourceId,
       data: composition
     },
 
@@ -86,7 +90,7 @@ export function update(patientId, composition) {
 
 export default function genericpluginActions($ngRedux) {
   let actionCreator = {
-    all, get, create, update
+    all, clear, get, create, update
   };
 
   return bindActionCreators(actionCreator, $ngRedux.dispatch);

@@ -1,9 +1,7 @@
 'use strict';
-import GenericpluginListComponent from '../../../../app/rippleui/pages/generic-plugin/genericplugin-list.component';
-import '../../../../app/index';
-import '../../../../app/actions/index';
-import * as types from '../../../../app/constants/ActionTypes';
-import genericplugin from '../../../../app/rippleui/pages/generic-plugin/genericplugin-actions';
+import GenericpluginListComponent from '../genericplugin-list.component';
+import * as types from '../action-types';
+import genericplugin from '../genericplugin-actions';
 
 describe('Genericplugin List', function() {
 

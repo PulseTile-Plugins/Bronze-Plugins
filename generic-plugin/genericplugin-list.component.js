@@ -17,97 +17,67 @@
 let templateGenericpluginList = require('./genericplugin-list.html');
 
 class GenericpluginListController {
-  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests, usSpinnerService) {
+  constructor($scope, $state, $stateParams, $ngRedux, genericpluginActions, serviceRequests, usSpinnerService, serviceFormatted) {
     serviceRequests.publisher('routeState', {state: $state.router.globals.current.views, breadcrumbs: $state.router.globals.current.breadcrumbs, name: 'patients-details'});
     serviceRequests.publisher('headerTitle', {title: 'Patients Details'});
+    genericpluginActions.clear();
+    this.actionLoadList = genericpluginActions.all;
 
-    this.currentPage = 1;
-    $scope.query = '';
-    this.isFilter = false;
     this.isShowCreateBtn = $state.router.globals.$current.name !== 'genericplugin-create';
     this.isShowExpandBtn = $state.router.globals.$current.name !== 'genericplugin';
 
 
-    this.setCurrentPageData = function (data) {
-      if (data.patientsGet.data) {
-        this.currentPatient = data.patientsGet.data;
-      }
-      if (data.genericplugin.data) {
-        this.genericplugin = data.genericplugin.data;
-      }
-      usSpinnerService.stop("patientSummary-spinner");
+    this.create = function () {
+      $state.go('genericplugin-create', {
+        patientId: $stateParams.patientId
+      });
+    };
+    
+    this.go = function (id, source) {
+      $state.go('genericplugin-detail', {
+        patientId: $stateParams.patientId,
+        detailsIndex: id,
+        page: $scope.currentPage || 1,
+        source: source
+      });
+    };
 
+    this.setCurrentPageData = function (store) {
+      const state = store.genericplugins;
+      const pagesInfo = store.pagesInfo;
+      const pluginName = 'genericPlugin';
+
+      if (serviceRequests.checkIsCanLoadingListData(state, pagesInfo, pluginName, $stateParams.patientId)) {
+        this.actionLoadList($stateParams.patientId);
+        serviceRequests.setPluginPage(pluginName);
+        usSpinnerService.spin('list-spinner');
+      }
+      if (state.data) {
+        this.genericplugins = state.data;
+
+        serviceFormatted.formattingTablesDate(this.genericplugins, ['dateCreated'], serviceFormatted.formatCollection.DDMMMYYYY);
+        serviceFormatted.filteringKeys = ['noteType', 'author', 'dateCreated', 'source'];
+      }
+      if (state.data || state.error) {
+        usSpinnerService.stop('list-spinner');
+        setTimeout(() => { usSpinnerService.stop('list-spinner') }, 0);
+      }
       if (serviceRequests.currentUserData) {
         this.currentUser = serviceRequests.currentUserData;
       }
     };
 
-    this.toggleFilter = function () {
-      this.isFilter = !this.isFilter;
-    };
-    
-    this.create = function () {
-      $state.go('genericplugin-create', {
-        patientId: $stateParams.patientId,
-        filter: this.query,
-        page: this.currentPage
-      });
-    };
-    
-    this.go = function (id, genericpluginSource) {
-      $state.go('genericplugin-detail', {
-        patientId: $stateParams.patientId,
-        genericpluginIndex: id,
-        filter: $scope.query,
-        page: this.currentPage,
-        reportType: $stateParams.reportType,
-        searchString: $stateParams.searchString,
-        queryType: $stateParams.queryType,
-        source: JSON.stringify(genericpluginSource)
-      });
-    };
-
-    this.pageChangeHandler = function (newPage) {
-      $scope.currentPage = newPage;
-    };
-
-    if ($stateParams.page) {
-      $scope.currentPage = $stateParams.page;
-    }
-
-    this.search = function (row) {
-      return (
-        row.noteType.toLowerCase().indexOf($scope.query.toLowerCase() || '') !== -1 ||
-        row.author.toLowerCase().indexOf($scope.query.toLowerCase() || '') !== -1 ||
-        row.dateCreated.toLowerCase().indexOf($scope.query.toLowerCase() || '') !== -1 ||
-        row.source.toLowerCase().indexOf($scope.query.toLowerCase() || '') !== -1
-      );
-    };
-
-    if ($stateParams.filter) {
-      $scope.query = $stateParams.filter;
-    }
-
-
-    this.selected = function (genericpluginIndex) {
-      return genericpluginIndex === $stateParams.genericpluginIndex;
-    };
-
     let unsubscribe = $ngRedux.connect(state => ({
       getStoreData: this.setCurrentPageData(state)
     }))(this);
-
     $scope.$on('$destroy', unsubscribe);
-
-    this.genericpluginLoad = genericpluginActions.all;
-    this.genericpluginLoad($stateParams.patientId);
   }
 }
 
-const genericpluginListComponent = {
+const GenericpluginListComponent = {
   template: templateGenericpluginList,
   controller: GenericpluginListController
 };
 
-GenericpluginListController.$inject = ['$scope', '$state', '$stateParams', '$ngRedux', 'genericpluginActions', 'serviceRequests', 'usSpinnerService'];
-export default genericpluginListComponent;
+GenericpluginListController.$inject = ['$scope', '$state', '$stateParams', '$ngRedux', 'genericpluginActions', 'serviceRequests', 'usSpinnerService', 'serviceFormatted'];
+export default GenericpluginListComponent;

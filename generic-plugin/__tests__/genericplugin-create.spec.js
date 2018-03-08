@@ -1,5 +1,4 @@
-import GenericpluginCreateComponent from '../../../../app/rippleui/pages/generic-plugin/genericplugin-create.component';
-import '../../../../app/index';
+import GenericpluginCreateComponent from '../genericplugin-create.component';
 
 describe('Genericplugin Create', function() {
 
