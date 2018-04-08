@@ -58,10 +58,10 @@ class DiaryentriesCreateController {
         var current = event.resultIndex;
         var transcript = event.results[current][0].transcript;
 
-        if (!$scope.diaryentryEdit || !$scope.diaryentryEdit.notes) {
-          $scope.diaryentryEdit.notes = '';
+        if (!$scope.diaryentry.notes) {
+          $scope.diaryentry.notes = '';
         }
-        $scope.diaryentryEdit.notes += transcript;
+        $scope.diaryentry.notes += transcript;
         $scope.$apply();
       }
     }
