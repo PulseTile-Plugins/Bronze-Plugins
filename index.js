@@ -14,7 +14,9 @@
  ~  limitations under the License.
  */
 import genericPlugin from './generic-plugin/index';
+import diaryEntries from './diary-entry/index';
 
 export default [
-  genericPlugin
+  genericPlugin,
+  diaryEntries
 ]
