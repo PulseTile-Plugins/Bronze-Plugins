@@ -38,13 +38,15 @@
 
             <div class="form-group" ng-class="{'has-error': (formSubmitted || diaryentryForm.notes.$dirty) && diaryentryForm.notes.$invalid, 'has-success': diaryentryForm.notes.$valid && diaryentryForm.notes.$dirty}">
               <label for="notes" class="control-label">Note</label>
-              <div class="input-holder">
-                <div class="control-group right" style="margin-bottom: -50px;">
+              <mc-textarea-with-button>
+                <mc-button>
                   <button class="btn btn-success btn-inverse btn-square" ng-if="!recognitionStarted" ng-click="startSpeach()"><i class="fa fa-microphone"></i></button>
                   <button class="btn btn-success btn-inverse btn-square active" ng-if="recognitionStarted" ng-click="stopSpeach()"><i class="fa fa-microphone"></i></button>
-                </div>
-                <textarea class="form-control textarea-big input-sm" id="notes" name="notes" ng-model="diaryentry.notes" required></textarea>
-              </div>
+                </mc-button>
+                <mc-field>
+                  <textarea class="form-control textarea-big input-sm" id="notes" name="notes" ng-model="diaryentry.notes" required></textarea>
+                </mc-field>
+              </mc-textarea-with-button>
               <span class="help-block animate-fade" ng-show="formSubmitted && diaryentryForm.note.$error.required">You must enter a value.</span>
             </div>
 
